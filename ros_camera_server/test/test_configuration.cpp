@@ -18,6 +18,8 @@
 #include <gst/gst.h>
 #include <gtest/gtest.h>
 #include <ros_camera_server/configuration.hpp>
+#include <ros_camera_server/factories/pipeline_input_factory.hpp>
+#include <ros_camera_server/factories/pipeline_output_factory.hpp>
 #include <ros_camera_server/inputs/ros2_input.hpp>
 #include <ros_camera_server/inputs/rtp_input.hpp>
 #include <ros_camera_server/inputs/videotestsrc_input.hpp>
@@ -502,6 +504,35 @@ TEST( Ros2InputConfigurationTest, CreateInputKeepsTopicForRaw )
   gst_object_unref( src );
   gst_element_set_state( GST_ELEMENT( stream.bin ), GST_STATE_NULL );
   gst_object_unref( stream.bin );
+}
+
+TEST( CameraConfigurationTest, CameraInfoTopic )
+{
+  ros_camera_server::PipelineInputFactory::registerDefaultInputs();
+  ros_camera_server::PipelineOutputFactory::registerDefaultOutputs();
+  const auto config = ros_camera_server::CameraServerConfiguration::from_yaml( R"(
+cameras:
+  explicit:
+    camera_info_topic: /explicit/camera_info
+    input: { type: ros2, topic: /input/image_raw }
+    outputs: [ { type: srt, codec: h264, port: 7100 } ]
+  ros2_input:
+    input: { type: ros2, topic: /input/image_raw }
+    outputs: [ { type: srt, codec: h264, port: 7101 } ]
+  ros2_output:
+    input: { type: videotestsrc, width: 640, height: 480, framerate: "30/1" }
+    outputs:
+      - { type: ros2, topic: /no_info/image }
+      - { type: ros2, topic: /output/image, camera_info_url: "file:///info.yaml" }
+  none:
+    input: { type: videotestsrc, width: 640, height: 480, framerate: "30/1" }
+    outputs: [ { type: srt, codec: h264, port: 7102 } ]
+)" );
+  ASSERT_EQ( config.cameras.size(), 4u );
+  EXPECT_EQ( config.cameras[0].camera_info_topic, "/explicit/camera_info" );
+  EXPECT_EQ( config.cameras[1].camera_info_topic, "/input/camera_info" );
+  EXPECT_EQ( config.cameras[2].camera_info_topic, "/output/camera_info" );
+  EXPECT_EQ( config.cameras[3].camera_info_topic, "" );
 }
 
 int main( int argc, char **argv )

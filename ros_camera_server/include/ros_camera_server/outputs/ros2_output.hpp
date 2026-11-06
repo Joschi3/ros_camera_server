@@ -38,6 +38,11 @@ struct Ros2OutputConfiguration : public OutputConfiguration {
 
   YAML::Node toYaml() const override;
 
+  std::string cameraInfoTopic() const override
+  {
+    return camera_info_url.empty() ? "" : siblingCameraInfoTopic( topic );
+  }
+
   static std::shared_ptr<Ros2OutputConfiguration> from_yaml_shared( const YAML::Node &config );
 };
 
