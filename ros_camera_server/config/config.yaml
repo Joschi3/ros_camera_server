@@ -53,6 +53,9 @@ cameras:
         camera_info_url: "package://ros_camera_server/config/example_camera_info.yaml"
   example_camera_ros:
     name: "Example Camera ROS"
+    # Optional: the sensor_msgs/CameraInfo topic announced to clients, e.g., to project 3D data into the image.
+    # Defaults to the camera_info next to the topic of a ros2 input or a ros2 output with camera_info_url.
+    # camera_info_topic: "/camera_info"
     input:
       type: ros2
       topic: "/image_raw"

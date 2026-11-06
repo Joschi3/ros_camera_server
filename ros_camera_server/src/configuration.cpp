@@ -136,6 +136,14 @@ CameraServerConfiguration CameraServerConfiguration::from_yaml( const std::strin
     for ( const auto &output : entry["outputs"] ) {
       camera.outputs.push_back( load_output_configuration( output ) );
     }
+    camera.camera_info_topic = entry["camera_info_topic"].as<std::string>( "" );
+    if ( camera.camera_info_topic.empty() )
+      camera.camera_info_topic = camera.input->cameraInfoTopic();
+    for ( const auto &output : camera.outputs ) {
+      if ( !camera.camera_info_topic.empty() )
+        break;
+      camera.camera_info_topic = output->cameraInfoTopic();
+    }
     result.cameras.push_back( camera );
   }
   return result;

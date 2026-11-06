@@ -79,6 +79,7 @@ void CameraServerNode::publishAnnouncement()
     ros_camera_server_msgs::msg::Camera camera_msg;
     camera_msg.id = camera_config.id;
     camera_msg.name = camera_config.name;
+    camera_msg.camera_info_topic = camera_config.camera_info_topic;
 
     const auto &outputs = pipeline->outputs();
     for ( const auto &output : outputs ) {

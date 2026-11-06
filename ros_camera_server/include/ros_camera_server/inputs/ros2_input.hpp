@@ -30,6 +30,7 @@ class Ros2InputConfiguration : public InputConfiguration
 public:
   std::string topic;
   Ros2InputFormat format;
+  std::string cameraInfoTopic() const override { return siblingCameraInfoTopic( topic ); }
   StreamInput createInput( const rclcpp::Node::SharedPtr &,
                            const std::string &camera_id ) const override;
 

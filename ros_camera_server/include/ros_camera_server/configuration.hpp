@@ -135,6 +135,12 @@ inline StreamFormat stream_format_from_codec( std::string codec )
   return StreamFormat::INVALID;
 }
 
+//! The camera_info topic next to an image topic, e.g., /cam/image_raw -> /cam/camera_info.
+inline std::string siblingCameraInfoTopic( const std::string &image_topic )
+{
+  return image_topic.substr( 0, image_topic.rfind( '/' ) + 1 ) + "camera_info";
+}
+
 struct StreamInput {
   GstBin *bin = nullptr;
   StreamFormat format;
@@ -156,6 +162,9 @@ public:
   /// Derived from_yaml_shared methods call this so a new shared field only
   /// needs to be added in one place.
   void loadSharedFromYaml( const YAML::Node &config );
+
+  //! The camera_info topic of this input, empty if unknown.
+  virtual std::string cameraInfoTopic() const { return ""; }
 
   [[nodiscard]] virtual StreamInput createInput( const rclcpp::Node::SharedPtr &,
                                                  const std::string &camera_id ) const = 0;
@@ -185,6 +194,9 @@ public:
 
   virtual YAML::Node toYaml() const = 0;
 
+  //! The camera_info topic published by this output, empty if none.
+  virtual std::string cameraInfoTopic() const { return ""; }
+
   [[nodiscard]] virtual PipelineOutput::Ptr createOutput( const rclcpp::Node::SharedPtr &,
                                                           const std::string &camera_id,
                                                           int index ) const = 0;
@@ -207,6 +219,7 @@ public:
 struct CameraConfiguration {
   std::string id;
   std::string name;
+  std::string camera_info_topic;
   std::shared_ptr<InputConfiguration> input;
   std::vector<std::shared_ptr<OutputConfiguration>> outputs;
 };
